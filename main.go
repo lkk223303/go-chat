@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
-	"net/http"
+	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -28,15 +33,35 @@ func (m *Message) GetByteMessage() []byte {
 }
 
 func main() {
-	r := gin.Default()
-	r.LoadHTMLGlob("template/html/*")
-	r.Static("/assets", "./template/assets")
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
+
+	// load config
+
+	// mongo init connect
+	client := GetMgoCli()
+
+	collection := client.Database("testing").Collection("numbers")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res, err := collection.InsertOne(ctx, bson.D{{"name", "pi"}, {"value", 3.14159}})
+	if err != nil {
+		log.Fatal("insert err", err)
+	}
+	id := res.InsertedID
+	log.Println(id)
+
+	// init logger
+
+	// server engine
+
+	engine := gin.Default()
+	engine.LoadHTMLGlob("template/html/*")
+	engine.Static("/assets", "./template/assets")
+
+	// set routes
+	// apiRoute(engine)
 
 	m := melody.New()
-	r.GET("/ws", func(c *gin.Context) {
+	engine.GET("/ws", func(c *gin.Context) {
 		m.HandleRequest(c.Writer, c.Request)
 	})
 
@@ -54,5 +79,38 @@ func main() {
 		m.Broadcast(NewMessage("other", id, "離開聊天室").GetByteMessage())
 		return nil
 	})
-	r.Run(":8080")
+	engine.Run(":8080")
+}
+
+var mgoCli *mongo.Client
+
+func initMongoDB() {
+	var err error
+
+	username := "root"
+	pass := "123456"
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	b := &options.Credential{
+		Username: username,
+		Password: pass,
+	}
+	clientOptions.Auth = b
+
+	// 连接到MongoDB
+	mgoCli, err = mongo.Connect(context.TODO(), clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// 检查连接
+	err = mgoCli.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+func GetMgoCli() *mongo.Client {
+	if mgoCli == nil {
+		initMongoDB()
+	}
+	log.Println("mongo inited")
+	return mgoCli
 }
