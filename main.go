@@ -46,6 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatal("insert err", err)
 	}
+
 	id := res.InsertedID
 	log.Println(id)
 
@@ -58,7 +59,7 @@ func main() {
 	engine.Static("/assets", "./template/assets")
 
 	// set routes
-	// apiRoute(engine)
+	apiRoute(engine)
 
 	m := melody.New()
 	engine.GET("/ws", func(c *gin.Context) {
@@ -79,7 +80,7 @@ func main() {
 		m.Broadcast(NewMessage("other", id, "離開聊天室").GetByteMessage())
 		return nil
 	})
-	engine.Run(":8080")
+	engine.Run(":8088")
 }
 
 var mgoCli *mongo.Client
