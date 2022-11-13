@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,6 +12,7 @@ import (
 
 // mongoDB driver here
 var mgoCli *mongo.Client
+var redisCli *redis.Client
 
 func initMongoDB() {
 	var err error
@@ -46,4 +48,28 @@ func GetMongoClient() *mongo.Client {
 
 	log.Println("mongo inited")
 	return mgoCli
+}
+
+func initRedis() {
+	host := viper.GetString("redis.host")
+	port := viper.GetString("redis.port")
+	addr := host + ":" + port
+	redisCli = redis.NewClient(&redis.Options{
+		Addr: addr,
+		DB:   0, // use default DB
+	})
+	pong, err := redisCli.Ping().Result()
+	if err == nil {
+		log.Println("redis init, ", pong)
+	} else {
+		log.Fatal("redis connect error: ", err)
+	}
+}
+func GetrRedisClient() *redis.Client {
+	if redisCli == nil {
+		initRedis()
+	}
+
+	log.Println("redis inited")
+	return redisCli
 }

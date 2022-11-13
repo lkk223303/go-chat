@@ -26,11 +26,11 @@ func main() {
 	// init line
 	lineBot := bot.LineConfig()
 
-	// mongo init connect
+	// mongo/redis init connect
 	client := driver.GetMongoClient()
-
+	rdsCli := driver.GetrRedisClient()
 	// init handler
-	repo := handlers.NewRepo(client, lineBot)
+	repo := handlers.NewRepo(client, lineBot, rdsCli)
 	handlers.NewHandler(repo)
 
 	// server engine

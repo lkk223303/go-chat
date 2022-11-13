@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -17,13 +18,15 @@ var Repo *Repository
 type Repository struct {
 	DB  repository.DatabaseRepo
 	Bot *linebot.Client
+	Rds *redis.Client
 }
 
 // for main.go to init
-func NewRepo(client *mongo.Client, bot *linebot.Client) *Repository {
+func NewRepo(client *mongo.Client, bot *linebot.Client, r *redis.Client) *Repository {
 	return &Repository{
 		DB:  dbrepo.NewMongoRepo(client),
 		Bot: bot,
+		Rds: r,
 	}
 }
 
