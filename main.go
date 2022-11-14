@@ -2,6 +2,7 @@ package main
 
 import (
 	"chatty/bot"
+	"chatty/utils"
 
 	"chatty/driver"
 	"chatty/handlers"
@@ -32,6 +33,8 @@ func main() {
 	// init handler
 	repo := handlers.NewRepo(client, lineBot, rdsCli)
 	handlers.NewHandler(repo)
+	util := utils.NewUtil(client, rdsCli)
+	go util.AddMessage()
 
 	// server engine
 	engine := gin.Default()

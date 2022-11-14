@@ -69,7 +69,11 @@ func (m *Repository) CallBack(c *gin.Context) {
 				msgEvent.UserID = event.Source.UserID
 				msgEvent.Message = msg.Text
 				msgEvent.TimeStamp = event.Timestamp
-				m.DB.InsertMessage(msgEvent)
+				_, err := m.Rds.LPush(models.MsgCache, msgEvent).Result()
+				if err != nil {
+					log.Println("redis message error, ", err)
+					m.DB.InsertMessage(msgEvent)
+				}
 			}
 		}
 	}

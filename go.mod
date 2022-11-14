@@ -9,8 +9,11 @@ require (
 )
 
 require (
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/spf13/cobra v1.6.1 // indirect
+	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 )
 
 require (
