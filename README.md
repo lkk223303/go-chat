@@ -1,7 +1,7 @@
 # Go-chat with Line bot
 
 This is the repository for candidate tech stack project.
-![go-chat](https://user-images.githubusercontent.com/10274839/201698449-d7993bfb-49d1-4818-b7de-b3e550fde587.png)
+![go-chat](https://user-images.githubusercontent.com/10274839/201699426-c89e94ca-e5a3-4a65-9455-5bd6433600e9.png)
 
 - Built in Go version 1.17
 - Uses the [gin server](https://github.com/go-chi/chi)
