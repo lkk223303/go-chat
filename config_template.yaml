@@ -1,0 +1,18 @@
+application:
+  port: ":8088" #default 
+  mode: "debug"
+mongo:
+  host: "<host>"
+  port: 27017 #default 
+  user: "<username>"
+  password: "<password>"
+  dbname: ""
+  max_open_conns: 200
+  max_idle_conns: 50
+redis:
+  host: "<host>"
+  port: 6379 #default 
+line:
+  channel_ID: "<Line_channel_ID>"
+  channel_secret: "<Line_channel_secret>"
+  channel_access_token: "<Line_channel_access_token>"

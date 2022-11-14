@@ -38,6 +38,23 @@ func (m *mongoDBRepo) InsertMessage(msg models.EventMessage) error {
 	return nil
 }
 
+func (m *mongoDBRepo) InsertMessages(msgs []models.EventMessage) error {
+	ctx, cancel := context.WithTimeout(context.Background(), MAXTIMEOUT)
+	defer cancel()
+	collection := m.Client.Database("line").Collection("Messages")
+	var u []interface{}
+	for _, t := range msgs {
+		u = append(u, t)
+	}
+	res, err := collection.InsertMany(ctx, u)
+	if err != nil {
+		return fmt.Errorf("insert multiple messages error: %s", err)
+	}
+	inserts := len(res.InsertedIDs)
+	log.Printf("insert %d messages success, ids: %s", inserts, res.InsertedIDs)
+	return nil
+}
+
 func (m *mongoDBRepo) GetMessagesFromUser(userId string) ([]models.EventMessage, error) {
 	var msgEvents []models.EventMessage
 	ctx, cancel := context.WithTimeout(context.Background(), MAXTIMEOUT)

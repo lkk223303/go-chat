@@ -38,8 +38,8 @@ func main() {
 
 	// server engine
 	engine := gin.Default()
-	engine.LoadHTMLGlob("template/html/*")
-	engine.Static("/assets", "./template/assets")
+	// engine.LoadHTMLGlob("template/html/*")
+	// engine.Static("/assets", "./template/assets")
 	// os.Setenv("GIN_MODE", "release")
 	// set routes
 	apiRoute(engine)

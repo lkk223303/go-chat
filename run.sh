@@ -1,0 +1,1 @@
+docker-compose -f docker-compose.yml up -d && go build -o go-chat *.go && ./go-chat

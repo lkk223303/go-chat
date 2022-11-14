@@ -36,12 +36,11 @@ func NewHandler(r *Repository) {
 }
 
 func (m *Repository) Home(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", nil)
+	c.JSON(http.StatusOK, gin.H{"Welcome": "this is a welcome message"})
 }
 
 func (m *Repository) TestMongo(c *gin.Context) {
 	m.DB.Testing()
-
 	c.JSON(http.StatusOK, gin.H{"db test": "ok"})
 }
 
