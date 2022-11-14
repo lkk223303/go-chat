@@ -10,4 +10,6 @@ This is the repository for candidate tech stack project.
 
 1. Requires Docker and Docker-compose setup
 2. Setup config_template.yaml file and Run ./run.sh
-3. using repository pattern for handlers, utils and database
+3. Setup [ngrok](https://ngrok.com) for port forwarding
+4. Setup Line developer webhook url as ngrok url 
+5. using repository pattern for handlers, utils and database
