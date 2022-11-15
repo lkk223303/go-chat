@@ -131,3 +131,21 @@ func ReplyLineMessage(replyToken string, msg string) error {
 	}
 	return nil
 }
+
+func SendImageMessage(userId string, urls []string) error {
+	sendTo := userId
+	if _, err := uTool.Bot.PushMessage(sendTo, linebot.NewImageMessage(urls[0], urls[1])).Do(); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func SendLocationMessage(userId string) error {
+	sendTo := userId
+	if _, err := uTool.Bot.PushMessage(sendTo, linebot.NewLocationMessage("臺北市政府警察局中正第一分局",
+		"100台北市中正區公園路15號", 25.0451104, 121.5173231)).Do(); err != nil {
+		return err
+	}
+	return nil
+}

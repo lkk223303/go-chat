@@ -5,6 +5,7 @@ import (
 	"chatty/repository"
 	"chatty/repository/dbrepo"
 	"chatty/utils"
+	"strings"
 
 	"log"
 	"net/http"
@@ -64,18 +65,25 @@ func (m *Repository) CallBack(c *gin.Context) {
 			switch msg := event.Message.(type) {
 			case *linebot.TextMessage:
 
-				err = utils.ReplyLineMessage(event.ReplyToken, "哈哈，我先去洗澡")
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "reply message error", "content": err})
-				}
+				if strings.Contains(msg.Text, "你家") {
+					err = utils.SendLocationMessage(event.Source.UserID)
+					if err != nil {
+						c.JSON(http.StatusInternalServerError, gin.H{"error": "reply message error", "content": err})
+					}
+				} else {
+					err = utils.ReplyLineMessage(event.ReplyToken, "哈哈，我先去洗澡")
+					if err != nil {
+						c.JSON(http.StatusInternalServerError, gin.H{"error": "reply message error", "content": err})
+					}
 
-				msgEvent.UserID = event.Source.UserID
-				msgEvent.Message = msg.Text
-				msgEvent.TimeStamp = event.Timestamp
-				err = utils.RedisPushMessage(msgEvent)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "redis push error", "content": err})
-					return
+					msgEvent.UserID = event.Source.UserID
+					msgEvent.Message = msg.Text
+					msgEvent.TimeStamp = event.Timestamp
+					err = utils.RedisPushMessage(msgEvent)
+					if err != nil {
+						c.JSON(http.StatusInternalServerError, gin.H{"error": "redis push error", "content": err})
+						return
+					}
 				}
 			}
 		}
