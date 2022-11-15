@@ -4,6 +4,8 @@ import (
 	"chatty/models"
 	"chatty/repository"
 	"chatty/repository/dbrepo"
+	"chatty/utils"
+
 	"log"
 	"net/http"
 
@@ -61,17 +63,19 @@ func (m *Repository) CallBack(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch msg := event.Message.(type) {
 			case *linebot.TextMessage:
-				if _, err = m.Bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg.Text+" 好開心")).Do(); err != nil {
-					log.Println("resp message error ", err)
+
+				err = utils.ReplyLineMessage(event.ReplyToken, "哈哈，我先去洗澡")
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "reply message error", "content": err})
 				}
 
 				msgEvent.UserID = event.Source.UserID
 				msgEvent.Message = msg.Text
 				msgEvent.TimeStamp = event.Timestamp
-				_, err := m.Rds.LPush(models.MsgCache, msgEvent).Result()
+				err = utils.RedisPushMessage(msgEvent)
 				if err != nil {
-					log.Println("redis message error, ", err)
-					m.DB.InsertMessage(msgEvent)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "redis push error", "content": err})
+					return
 				}
 			}
 		}
@@ -86,24 +90,24 @@ func (m *Repository) SendMessage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "client parameter error", "content": err})
 		return
 	}
-	sendTo := event.UserID
-	msg := event.Message
-	if _, err := m.Bot.PushMessage(sendTo, linebot.NewTextMessage(msg)).Do(); err != nil {
+	err = utils.SendLineMessage(event)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "sending line message error", "content": err})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": "ok", "content": "message successfully pushed"})
+	log.Println("message sent to line: ", event.Message)
+	c.JSON(http.StatusOK, gin.H{"success": "ok", "content": "message successfully sent"})
 }
 
 // Query message list of the user from MongoDB
 func (m *Repository) Messages(c *gin.Context) {
 	userId := c.Param("userId")
 
-	list, err := m.DB.GetMessagesFromUser(userId)
+	list, err := utils.GetMessagesFromUser(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	// log.Println(list)
+
 	c.JSON(http.StatusOK, gin.H{"success": list})
 }

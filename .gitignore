@@ -1,3 +1,4 @@
 config.yaml
 .out
 go-chat
+.DS_Store

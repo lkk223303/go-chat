@@ -33,8 +33,8 @@ func main() {
 	// init handler
 	repo := handlers.NewRepo(client, lineBot, rdsCli)
 	handlers.NewHandler(repo)
-	util := utils.NewUtil(client, rdsCli)
-	go util.AddMessage()
+	util := utils.InitUtil(client, lineBot, rdsCli)
+	utils.NewUtil(util)
 
 	// server engine
 	engine := gin.Default()

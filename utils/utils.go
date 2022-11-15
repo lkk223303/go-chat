@@ -4,39 +4,51 @@ import (
 	"chatty/models"
 	"chatty/repository"
 	"chatty/repository/dbrepo"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/line/line-bot-sdk-go/linebot"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+var uTool *Util
+
 type Util struct {
 	DB  repository.DatabaseRepo
+	Bot *linebot.Client
 	Rds *redis.Client
 	l   sync.Mutex
 }
 
-func NewUtil(client *mongo.Client, r *redis.Client) *Util {
+func InitUtil(client *mongo.Client, bot *linebot.Client, r *redis.Client) *Util {
+	go consumeMessage()
+
 	return &Util{
 		DB:  dbrepo.NewMongoRepo(client),
+		Bot: bot,
 		Rds: r,
 	}
+}
 
+func NewUtil(u *Util) {
+	uTool = u
 }
 
 var eventList []models.EventMessage
 var batch int = 10
 
-func (u *Util) AddMessage() {
+// consumeMessage consumes messages from redis to mongo
+func consumeMessage() {
 	t := time.NewTicker(10 * time.Second)
 	for {
 
 		var msgEvent models.EventMessage
 		// 5秒超時
-		value, err := u.Rds.BRPop(5*time.Second, models.MsgCache).Result()
+		value, err := uTool.Rds.BRPop(5*time.Second, models.MsgCache).Result()
 		if err == redis.Nil {
 			// 查詢不到資料
 			time.Sleep(1 * time.Second)
@@ -58,9 +70,9 @@ func (u *Util) AddMessage() {
 
 		// Insert messages when hitting batch
 		if len(eventList) == batch {
-			u.l.Lock()
-			err = u.DB.InsertMessages(eventList)
-			u.l.Unlock()
+			uTool.l.Lock()
+			err = uTool.DB.InsertMessages(eventList)
+			uTool.l.Unlock()
 			if err != nil {
 				log.Fatal("Add message error: ", err)
 			}
@@ -71,16 +83,51 @@ func (u *Util) AddMessage() {
 		go func() {
 			<-t.C
 			if len(eventList) > 0 {
-				u.l.Lock()
-				err = u.DB.InsertMessages(eventList)
-				u.l.Unlock()
+				uTool.l.Lock()
+				err = uTool.DB.InsertMessages(eventList)
+				uTool.l.Unlock()
 				if err != nil {
 					log.Fatal("Add message error: ", err)
 				}
 				eventList = nil
 			}
 		}()
-
 		time.Sleep(500 * time.Millisecond)
 	}
+}
+
+func GetMessagesFromUser(userId string) ([]models.EventMessage, error) {
+	msgEventList, err := uTool.DB.GetMessagesFromUser(userId)
+	if err != nil {
+		return nil, err
+	}
+	if len(msgEventList) == 0 {
+		return nil, fmt.Errorf("the user does not contain any messages")
+	}
+	return msgEventList, nil
+}
+
+func SendLineMessage(event models.EventMessage) error {
+	sendTo := event.UserID
+	msg := event.Message
+	if _, err := uTool.Bot.PushMessage(sendTo, linebot.NewTextMessage(msg)).Do(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func RedisPushMessage(event models.EventMessage) error {
+	_, err := uTool.Rds.LPush(models.MsgCache, event).Result()
+	if err != nil {
+		log.Println("redis message error, ", err)
+		return err
+	}
+	return nil
+}
+func ReplyLineMessage(replyToken string, msg string) error {
+	if _, err := uTool.Bot.ReplyMessage(replyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
+		log.Println("reply message error ", err)
+		return err
+	}
+	return nil
 }
