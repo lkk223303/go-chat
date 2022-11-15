@@ -6,6 +6,7 @@ import (
 	"chatty/repository/dbrepo"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -15,6 +16,7 @@ import (
 type Util struct {
 	DB  repository.DatabaseRepo
 	Rds *redis.Client
+	l   sync.Mutex
 }
 
 func NewUtil(client *mongo.Client, r *redis.Client) *Util {
@@ -54,9 +56,11 @@ func (u *Util) AddMessage() {
 		log.Println("Income msgEvent: ", msgEvent)
 		eventList = append(eventList, msgEvent)
 
-		// insert messages when hitting batch
+		// Insert messages when hitting batch
 		if len(eventList) == batch {
+			u.l.Lock()
 			err = u.DB.InsertMessages(eventList)
+			u.l.Unlock()
 			if err != nil {
 				log.Fatal("Add message error: ", err)
 			}
@@ -67,7 +71,9 @@ func (u *Util) AddMessage() {
 		go func() {
 			<-t.C
 			if len(eventList) > 0 {
+				u.l.Lock()
 				err = u.DB.InsertMessages(eventList)
+				u.l.Unlock()
 				if err != nil {
 					log.Fatal("Add message error: ", err)
 				}

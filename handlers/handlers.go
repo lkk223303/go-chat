@@ -44,7 +44,7 @@ func (m *Repository) TestMongo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"db test": "ok"})
 }
 
-// line incoming message
+// Line incoming message
 func (m *Repository) CallBack(c *gin.Context) {
 	var msgEvent models.EventMessage
 	events, err := m.Bot.ParseRequest(c.Request)
@@ -61,7 +61,7 @@ func (m *Repository) CallBack(c *gin.Context) {
 		if event.Type == linebot.EventTypeMessage {
 			switch msg := event.Message.(type) {
 			case *linebot.TextMessage:
-				if _, err = m.Bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg.Text+" 笑死")).Do(); err != nil {
+				if _, err = m.Bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(msg.Text+" 好開心")).Do(); err != nil {
 					log.Println("resp message error ", err)
 				}
 
@@ -104,6 +104,6 @@ func (m *Repository) Messages(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	log.Println(list)
+	// log.Println(list)
 	c.JSON(http.StatusOK, gin.H{"success": list})
 }
