@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -21,7 +20,6 @@ type Util struct {
 	DB  repository.DatabaseRepo
 	Bot *linebot.Client
 	Rds *redis.Client
-	l   sync.Mutex
 }
 
 func InitUtil(client *mongo.Client, bot *linebot.Client, r *redis.Client) *Util {
@@ -70,9 +68,9 @@ func consumeMessage() {
 
 		// Insert messages when hitting batch
 		if len(eventList) == batch {
-			uTool.l.Lock()
+
 			err = uTool.DB.InsertMessages(eventList)
-			uTool.l.Unlock()
+
 			if err != nil {
 				log.Fatal("Add message error: ", err)
 			}
@@ -83,9 +81,9 @@ func consumeMessage() {
 		go func() {
 			<-t.C
 			if len(eventList) > 0 {
-				uTool.l.Lock()
+
 				err = uTool.DB.InsertMessages(eventList)
-				uTool.l.Unlock()
+
 				if err != nil {
 					log.Fatal("Add message error: ", err)
 				}
