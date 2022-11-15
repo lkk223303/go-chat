@@ -10,11 +10,12 @@ This is the repository for candidate tech stack project.
 - Uses [Line Bot Go SDK](https://github.com/line/line-bot-sdk-go) 
 - Uses [Viper](https://github.com/spf13/viper)
 
+### how to configure
 1. Docker and Docker-compose setup required
 2. Setup config_template.yaml file and Run ./run.sh
 3. Setup [ngrok](https://ngrok.com) for port forwarding
 4. Setup Line developer webhook url using ngrok url 
-5. using repository pattern for handlers, utils and database
-6. using redis for message caching queue
-4. Setup Line developer webhook url as ngrok url 
-5. using repository pattern for handlers, utils and database
+
+### features
+1. using redis for message caching queue
+2. using repository pattern for handlers, utils and database
