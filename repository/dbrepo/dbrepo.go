@@ -15,3 +15,9 @@ func NewMongoRepo(c *mongo.Client) repository.DatabaseRepo {
 		Client: c,
 	}
 }
+
+type postgresRepo struct{}
+
+func NewPostgresRepo() repository.DatabaseRepo {
+	return &postgresRepo{}
+}
