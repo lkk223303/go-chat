@@ -17,7 +17,7 @@ func (p *postgresRepo) InsertMessages(msgs []models.EventMessage) error {
 	return nil
 }
 
-func (p *postgresRepo) GetMessagesFromUser(userId string) ([]models.EventMessage, error) {
+func (p *postgresRepo) GetMessagesbyUser(userId string) ([]models.EventMessage, error) {
 	var msgEvents []models.EventMessage
 
 	return msgEvents, nil

@@ -107,11 +107,11 @@ func (m *Repository) SendMessage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": "ok", "content": "message successfully sent"})
 }
 
-// Query message list of the user from MongoDB
+// Get message list of the user from MongoDB
 func (m *Repository) Messages(c *gin.Context) {
 	userId := c.Param("userId")
 
-	list, err := utils.GetMessagesFromUser(userId)
+	list, err := utils.GetMessagesByUser(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return

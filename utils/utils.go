@@ -54,6 +54,7 @@ func consumeMessage() {
 		}
 		if err != nil {
 			time.Sleep(1 * time.Second)
+			log.Println("WARN: redis pop error: ", err)
 			continue
 		}
 		msgEvents := strings.Split(value[1], "\t")
@@ -94,8 +95,8 @@ func consumeMessage() {
 	}
 }
 
-func GetMessagesFromUser(userId string) ([]models.EventMessage, error) {
-	msgEventList, err := uTool.DB.GetMessagesFromUser(userId)
+func GetMessagesByUser(userId string) ([]models.EventMessage, error) {
+	msgEventList, err := uTool.DB.GetMessagesbyUser(userId)
 	if err != nil {
 		return nil, err
 	}
@@ -103,15 +104,6 @@ func GetMessagesFromUser(userId string) ([]models.EventMessage, error) {
 		return nil, fmt.Errorf("the user does not contain any messages")
 	}
 	return msgEventList, nil
-}
-
-func SendLineMessage(event models.EventMessage) error {
-	sendTo := event.UserID
-	msg := event.Message
-	if _, err := uTool.Bot.PushMessage(sendTo, linebot.NewTextMessage(msg)).Do(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func RedisPushMessage(event models.EventMessage) error {
@@ -122,9 +114,20 @@ func RedisPushMessage(event models.EventMessage) error {
 	}
 	return nil
 }
+
+// Reply text message
 func ReplyLineMessage(replyToken string, msg string) error {
 	if _, err := uTool.Bot.ReplyMessage(replyToken, linebot.NewTextMessage(msg)).Do(); err != nil {
 		log.Println("reply message error ", err)
+		return err
+	}
+	return nil
+}
+
+func SendLineMessage(event models.EventMessage) error {
+	sendTo := event.UserID
+	msg := event.Message
+	if _, err := uTool.Bot.PushMessage(sendTo, linebot.NewTextMessage(msg)).Do(); err != nil {
 		return err
 	}
 	return nil

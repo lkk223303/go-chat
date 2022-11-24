@@ -7,5 +7,5 @@ type DatabaseRepo interface {
 	Testing()
 	InsertMessage(msg models.EventMessage) error
 	InsertMessages(msgs []models.EventMessage) error
-	GetMessagesFromUser(userId string) ([]models.EventMessage, error)
+	GetMessagesbyUser(userId string) ([]models.EventMessage, error)
 }

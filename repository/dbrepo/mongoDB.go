@@ -55,7 +55,7 @@ func (m *mongoDBRepo) InsertMessages(msgs []models.EventMessage) error {
 	return nil
 }
 
-func (m *mongoDBRepo) GetMessagesFromUser(userId string) ([]models.EventMessage, error) {
+func (m *mongoDBRepo) GetMessagesbyUser(userId string) ([]models.EventMessage, error) {
 	var msgEvents []models.EventMessage
 	ctx, cancel := context.WithTimeout(context.Background(), MAXTIMEOUT)
 	defer cancel()
