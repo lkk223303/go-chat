@@ -81,7 +81,7 @@ func consumeMessage() {
 		// Or insert messages when time's up
 		go func() {
 			<-t.C
-			if len(eventList) > 0 {
+			if len(eventList) > 0 && len(eventList) < batch && eventList != nil {
 
 				err = uTool.DB.InsertMessages(eventList)
 
